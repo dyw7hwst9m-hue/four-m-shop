@@ -1,312 +1,1398 @@
-from pathlib import Path
-
-html = r'''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#fff7fb">
-<title>ร้านของเรา — ระบบร้านค้า</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>ร้านของมุก</title>
+
 <style>
 :root{
-  --bg:#fff7fb;--card:#fff;--ink:#29252b;--muted:#8f8790;--line:#eee4eb;
-  --accent:#d96b9d;--accent2:#f4d5e4;--good:#4f9b72;--warn:#d98c3f;--bad:#c85d69;
-  --shadow:0 10px 30px rgba(72,38,57,.08);--r:20px;
+  --bg:#fff7fb;
+  --card:#ffffff;
+  --ink:#29252b;
+  --muted:#8e8790;
+  --line:#eee4eb;
+  --main:#ff6fa8;
+  --main2:#ff91bd;
+  --danger:#ff5d5d;
+  --success:#4caf7d;
+  --shadow:0 8px 25px rgba(80,40,60,.08);
 }
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans Thai","Segoe UI",sans-serif}
-button,input,textarea,select{font:inherit}
-button{border:0;cursor:pointer}
-.app{max-width:1100px;margin:auto;min-height:100vh;padding-bottom:92px}
-.top{position:sticky;top:0;z-index:20;background:rgba(255,247,251,.92);backdrop-filter:blur(14px);padding:14px 16px;border-bottom:1px solid var(--line)}
-.topin{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{font-weight:800;font-size:20px}.sub{font-size:12px;color:var(--muted);margin-top:2px}
-.iconbtn{width:42px;height:42px;border-radius:14px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
-main{padding:18px 16px}
-.hero{background:linear-gradient(135deg,#fff,#fbe8f1);border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:18px}
-.hero img{width:100%;height:220px;object-fit:cover;display:block}
-.hero .copy{padding:18px}.hero h1{margin:0 0 6px;font-size:25px}.hero p{margin:0;color:var(--muted)}
-.row{display:flex;gap:10px;align-items:center}.between{justify-content:space-between}
-.chips{display:flex;gap:8px;overflow:auto;padding:2px 0 14px}.chip{white-space:nowrap;padding:9px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--muted)}.chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
-.product img{width:100%;height:160px;object-fit:cover;background:#f6eef3}.productbody{padding:12px}.product h3{font-size:16px;margin:0 0 5px}.price{font-weight:800}.muted{color:var(--muted);font-size:13px}.rating{font-size:13px;margin-top:6px}
-.add{margin-top:10px;width:100%;padding:10px;border-radius:13px;background:var(--accent);color:#fff;font-weight:700}
-.disabled{background:#ddd4da!important;color:#777!important;cursor:not-allowed}
-.section{margin:22px 0 12px}.section h2{font-size:18px;margin:0}.pill{font-size:11px;padding:5px 8px;border-radius:999px;background:var(--accent2);color:#7b3656}
-.bottom{position:fixed;z-index:30;bottom:0;left:50%;transform:translateX(-50%);width:min(1100px,100%);padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;gap:7px}
-.nav{flex:1;padding:9px 5px;border-radius:14px;background:transparent;color:var(--muted);font-size:12px}.nav.active{background:#fae5ef;color:#9e416b;font-weight:800}
-.btn{padding:11px 15px;border-radius:14px;background:var(--accent);color:#fff;font-weight:700}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.good{background:var(--good)}.btn.warn{background:var(--warn)}.btn.bad{background:var(--bad)}
-.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:var(--shadow);margin-bottom:12px}
-.field{margin:11px 0}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}.field input,.field textarea,.field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:#fff;outline:none}.field textarea{min-height:90px;resize:vertical}
-.qty{display:flex;align-items:center;gap:8px}.qty button{width:34px;height:34px;border-radius:10px;background:#f6e8ef}.qty span{min-width:22px;text-align:center;font-weight:800}
-.total{font-size:19px;font-weight:900}.empty{text-align:center;padding:45px 20px;color:var(--muted)}
-.modal{position:fixed;inset:0;background:rgba(41,37,43,.45);z-index:60;display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(700px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:26px 26px 0 0;padding:18px}.close{float:right;background:#f5edf2;width:38px;height:38px;border-radius:12px}
-.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{padding:15px;border-radius:18px;background:#fff;border:1px solid var(--line)}.stat b{font-size:22px;display:block;margin-top:3px}
-.status{display:inline-block;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800;background:#f4edf1}.s-wait{background:#fff0d9;color:#9a5b13}.s-making{background:#e9e0ff;color:#6240a1}.s-done{background:#e3f5e9;color:#2f7a50}.s-rejected{background:#fde5e7;color:#a4424d}.s-picked{background:#ececef;color:#555}
-.orderitems{padding-left:18px;margin:8px 0}.review{border-top:1px solid var(--line);padding:13px 0}.stars{letter-spacing:1px}
-.login{min-height:100vh;display:grid;place-items:center;padding:22px}.loginbox{width:min(460px,100%);background:#fff;border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:var(--shadow)}.logo{width:72px;height:72px;border-radius:22px;background:#fae2ed;display:grid;place-items:center;font-size:30px;margin-bottom:15px}.loginbox h1{margin:0 0 5px}.loginbox p{color:var(--muted)}
-.note{font-size:12px;color:var(--muted);line-height:1.55;background:#fbf4f7;padding:11px;border-radius:13px}
-.hidden{display:none!important}
-@media(min-width:720px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.product img{height:190px}.statgrid{grid-template-columns:repeat(4,1fr)}}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+  "Noto Sans Thai",sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  border:0;
+  cursor:pointer;
+}
+
+.app{
+  max-width:600px;
+  margin:auto;
+  min-height:100vh;
+  background:var(--bg);
+}
+
+/* HEADER */
+
+.header{
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:rgba(255,247,251,.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+}
+
+.header-inner{
+  padding:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.shop-name{
+  font-size:20px;
+  font-weight:800;
+}
+
+.account-btn{
+  background:white;
+  border:1px solid var(--line);
+  border-radius:50px;
+  padding:8px 14px;
+}
+
+/* HERO */
+
+.hero{
+  margin:16px;
+  min-height:190px;
+  border-radius:24px;
+  background:white;
+  overflow:hidden;
+  position:relative;
+  box-shadow:var(--shadow);
+}
+
+.hero img{
+  width:100%;
+  height:100%;
+  min-height:190px;
+  object-fit:cover;
+  display:block;
+}
+
+.hero-content{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:22px;
+  background:linear-gradient(
+    transparent,
+    rgba(0,0,0,.55)
+  );
+  color:white;
+}
+
+.hero-title{
+  font-size:27px;
+  font-weight:900;
+}
+
+.hero-text{
+  margin-top:5px;
+}
+
+/* CATEGORY */
+
+.categories{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:2px 16px 14px;
+}
+
+.categories::-webkit-scrollbar{
+  display:none;
+}
+
+.category{
+  flex:0 0 auto;
+  background:white;
+  border:1px solid var(--line);
+  border-radius:50px;
+  padding:9px 16px;
+}
+
+.category.active{
+  background:var(--main);
+  color:white;
+  border-color:var(--main);
+}
+
+/* PRODUCTS */
+
+.section{
+  padding:5px 16px 100px;
+}
+
+.section-title{
+  font-size:20px;
+  font-weight:850;
+  margin:12px 0;
+}
+
+.products{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+
+.product{
+  background:white;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  position:relative;
+}
+
+.product-image{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  background:#f5edf2;
+}
+
+.product-info{
+  padding:12px;
+}
+
+.product-name{
+  font-weight:750;
+}
+
+.product-desc{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
+  min-height:34px;
+}
+
+.product-bottom{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-top:10px;
+}
+
+.price{
+  font-weight:850;
+  color:var(--main);
+}
+
+.add-btn{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:var(--main);
+  color:white;
+  font-size:22px;
+}
+
+.closed{
+  position:absolute;
+  inset:0;
+  background:rgba(255,255,255,.75);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+}
+
+/* CART */
+
+.cart-bar{
+  position:fixed;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  width:min(568px,calc(100% - 28px));
+  background:#29252b;
+  color:white;
+  padding:14px 18px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  box-shadow:0 12px 35px rgba(0,0,0,.2);
+}
+
+.cart-count{
+  font-weight:800;
+}
+
+.checkout-btn{
+  background:var(--main);
+  color:white;
+  padding:10px 17px;
+  border-radius:12px;
+  font-weight:750;
+}
+
+/* MODAL */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  z-index:50;
+  display:none;
+  align-items:flex-end;
+  justify-content:center;
+}
+
+.modal.show{
+  display:flex;
+}
+
+.modal-box{
+  width:min(600px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:white;
+  border-radius:25px 25px 0 0;
+  padding:20px;
+}
+
+.modal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+
+.close{
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  background:#f5eef2;
+}
+
+.field{
+  margin-bottom:14px;
+}
+
+.field label{
+  display:block;
+  font-size:14px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.field input,
+.field textarea,
+.field select{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  outline:none;
+  background:white;
+}
+
+.primary{
+  width:100%;
+  padding:13px;
+  border-radius:13px;
+  background:var(--main);
+  color:white;
+  font-weight:800;
+}
+
+.secondary{
+  width:100%;
+  padding:13px;
+  border-radius:13px;
+  background:#f5eef2;
+  color:var(--ink);
+  font-weight:750;
+  margin-top:8px;
+}
+
+/* NAV */
+
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:min(600px,100%);
+  height:65px;
+  background:white;
+  border-top:1px solid var(--line);
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  z-index:30;
+}
+
+.nav-item{
+  background:none;
+  color:var(--muted);
+  font-size:12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:3px;
+}
+
+.nav-item.active{
+  color:var(--main);
+  font-weight:800;
+}
+
+.nav-icon{
+  font-size:21px;
+}
+
+/* ADMIN */
+
+.admin{
+  padding:16px;
+  padding-bottom:100px;
+}
+
+.admin-card{
+  background:white;
+  border-radius:18px;
+  padding:16px;
+  margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+
+.admin-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.badge{
+  padding:5px 10px;
+  border-radius:50px;
+  font-size:12px;
+  font-weight:750;
+}
+
+.badge.open{
+  background:#e8f8ef;
+  color:#238557;
+}
+
+.badge.closed{
+  position:static;
+  background:#ffeaea;
+  color:#c33;
+}
+
+.hidden{
+  display:none!important;
+}
+
+@media(max-width:430px){
+  .products{
+    grid-template-columns:1fr 1fr;
+  }
+}
 </style>
 </head>
+
 <body>
-<div id="root"></div>
+
+<div class="app">
+
+  <!-- HEADER -->
+
+  <header class="header">
+    <div class="header-inner">
+
+      <div class="shop-name" id="shopName">
+        ร้านของมุก
+      </div>
+
+      <button
+        class="account-btn"
+        onclick="openAccount()">
+        บัญชี
+      </button>
+
+    </div>
+  </header>
+
+
+  <!-- SHOP HOME -->
+
+  <main id="shopPage">
+
+    <section class="hero">
+
+      <img
+        id="heroImage"
+        src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1000&q=80"
+        alt="โปรโมชั่น">
+
+      <div class="hero-content">
+
+        <div
+          class="hero-title"
+          id="heroTitle">
+          วันนี้มีอะไรอร่อยบ้าง?
+        </div>
+
+        <div
+          class="hero-text"
+          id="heroText">
+          เลือกของที่อยากกินได้เลย
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- CATEGORIES -->
+
+    <div
+      class="categories"
+      id="categories">
+    </div>
+
+
+    <!-- PRODUCTS -->
+
+    <section class="section">
+
+      <div class="section-title">
+        รายการสินค้า
+      </div>
+
+      <div
+        class="products"
+        id="products">
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- CART -->
+
+  <div
+    class="cart-bar hidden"
+    id="cartBar">
+
+    <div>
+
+      <div>
+        ตะกร้า
+      </div>
+
+      <div
+        class="cart-count"
+        id="cartCount">
+        0 รายการ
+      </div>
+
+    </div>
+
+    <button
+      class="checkout-btn"
+      onclick="openCheckout()">
+      ชำระเงิน
+    </button>
+
+  </div>
+
+
+  <!-- BOTTOM NAV -->
+
+  <nav class="bottom-nav">
+
+    <button
+      class="nav-item active"
+      onclick="showShop()">
+
+      <span class="nav-icon">⌂</span>
+      ร้านค้า
+
+    </button>
+
+    <button
+      class="nav-item"
+      onclick="openOrders()">
+
+      <span class="nav-icon">🧾</span>
+      ออเดอร์
+
+    </button>
+
+    <button
+      class="nav-item"
+      onclick="openReviews()">
+
+      <span class="nav-icon">★</span>
+      รีวิว
+
+    </button>
+
+    <button
+      class="nav-item"
+      onclick="openAccount()">
+
+      <span class="nav-icon">○</span>
+      บัญชี
+
+    </button>
+
+  </nav>
+
+</div>
+
+
+<!-- ACCOUNT MODAL -->
+
+<div
+  class="modal"
+  id="accountModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h2>บัญชีลูกค้า</h2>
+
+      <button
+        class="close"
+        onclick="closeModal('accountModal')">
+        ×
+      </button>
+
+    </div>
+
+    <div id="accountContent">
+
+      <div class="field">
+
+        <label>
+          ชื่อเล่น
+        </label>
+
+        <input
+          id="customerName"
+          placeholder="ชื่อเล่น">
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          อายุ
+        </label>
+
+        <input
+          id="customerAge"
+          type="number"
+          min="1"
+          max="120"
+          placeholder="อายุ">
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          วันเกิด
+        </label>
+
+        <input
+          id="customerBirth"
+          type="date">
+
+      </div>
+
+
+      <div class="field">
+
+        <label>
+          รูปยืนยันตัวตน
+        </label>
+
+        <input
+          id="identityPhoto"
+          type="file"
+          accept="image/*"
+          capture="user">
+
+      </div>
+
+
+      <button
+        class="primary"
+        onclick="saveCustomer()">
+
+        บันทึกบัญชี
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- CHECKOUT -->
+
+<div
+  class="modal"
+  id="checkoutModal">
+
+  <div class="modal-box">
+
+    <div class="modal-head">
+
+      <h2>ตรวจสอบรายการ</h2>
+
+      <button
+        class="close"
+        onclick="closeModal('checkoutModal')">
+        ×
+      </button>
+
+    </div>
+
+
+    <div id="checkoutItems"></div>
+
+
+    <hr
+      style="border:0;border-top:1px solid var(--line);margin:15px 0">
+
+
+    <div
+      style="display:flex;justify-content:space-between;font-weight:800">
+
+      <span>
+        รวม
+      </span>
+
+      <span
+        id="checkoutTotal">
+        ฿0
+      </span>
+
+    </div>
+
+
+    <br>
+
+
+    <div class="field">
+
+      <label>
+        วิธีชำระเงิน
+      </label>
+
+      <select id="paymentMethod">
+
+        <option value="">
+          เลือกวิธีชำระ
+        </option>
+
+        <option value="transfer">
+          โอนเงิน
+        </option>
+
+        <option value="cash">
+          เงินสด
+        </option>
+
+      </select>
+
+    </div>
+
+
+    <div
+      id="transferBox"
+      class="hidden">
+
+      <div class="field">
+
+        <label>
+          สลิปการโอน
+        </label>
+
+        <input
+          type="file"
+          id="slip"
+          accept="image/*">
+
+      </div>
+
+      <p
+        style="font-size:13px;color:var(--muted);margin-bottom:12px">
+
+        ต้องชำระอย่างน้อย 50% ของยอดซื้อ
+
+      </p>
+
+    </div>
+
+
+    <div
+      id="cashBox"
+      class="hidden">
+
+      <div class="field">
+
+        <label>
+          จะมารับภายในกี่นาที?
+        </label>
+
+        <input
+          type="number"
+          id="pickupMinutes"
+          min="1"
+          placeholder="เช่น 20">
+
+      </div>
+
+    </div>
+
+
+    <button
+      class="primary"
+      onclick="submitOrder()">
+
+      ยืนยันออเดอร์
+
+    </button>
+
+  </div>
+
+</div>
+
 
 <script>
-const KEY="shop_demo_v1";
-const defaultData={
-  shopCreated:false,
-  shop:{name:"ร้านของเรา",subtitle:"ของอร่อยทำสดทุกวัน"},
-  customers:[],
-  products:[
-    {id:"p1",name:"ข้าวไก่ทอด",price:45,category:"อาหาร",desc:"ไก่ทอดกรอบ เสิร์ฟพร้อมข้าวร้อน ๆ",on:true,img:"https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=900&q=80"},
-    {id:"p2",name:"แซนด์วิช",price:39,category:"อาหาร",desc:"แซนด์วิชไส้แน่น กินง่าย",on:true,img:"https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=900&q=80"},
-    {id:"p3",name:"ชาเย็น",price:30,category:"เครื่องดื่ม",desc:"ชาเย็นหอม ๆ หวานกำลังดี",on:true,img:"https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=900&q=80"},
-    {id:"p4",name:"เมนูทดลอง",price:55,category:"โปรโมชั่น",desc:"ตอนนี้ปิดขายชั่วคราว",on:false,img:"https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80"}
-  ],
-  categories:["ทั้งหมด","อาหาร","เครื่องดื่ม","ของทานเล่น","โปรโมชั่น"],
-  orders:[],
-  reviews:[],
-  banner:{on:true,title:"โปรโมชั่นวันนี้",text:"เลือกเมนูที่ชอบแล้วสั่งได้เลย",img:"https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1400&q=80"}
-};
-let data=load(), role=null, page="home", cart=[], currentCustomer=null;
 
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||structuredClone(defaultData)}catch(e){return structuredClone(defaultData)}}
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function money(n){return "฿"+Number(n||0).toLocaleString("th-TH")}
-function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function uid(p="id"){return p+Math.random().toString(36).slice(2,9)}
-function today(){return new Date().toISOString().slice(0,10)}
-function ageFrom(d){if(!d)return "";const b=new Date(d),n=new Date();let a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()==b.getMonth()&&n.getDate()<b.getDate()))a--;return a}
-function productById(id){return data.products.find(p=>p.id===id)}
+/* =========================
+   DEMO DATA
+========================= */
 
-function render(){document.getElementById("root").innerHTML=role?app():login()}
-function login(){
- return `<div class="login"><div class="loginbox">
- <div class="logo">🛍️</div><h1>${esc(data.shop.name)}</h1><p>${esc(data.shop.subtitle)}</p>
- <div class="panel"><h3>ลูกค้า</h3><p class="muted">สมัครบัญชีเพื่อสั่งซื้อ ติดตามออเดอร์ และรีวิว</p>
- <button class="btn" style="width:100%" onclick="customerRegister()">สมัคร / เข้าสู่ระบบลูกค้า</button></div>
- <div class="panel"><h3>เจ้าของร้าน</h3><p class="muted">${data.shopCreated?"บัญชีร้านถูกสร้างแล้ว":"สร้างบัญชีร้านได้เพียง 1 บัญชีสำหรับระบบนี้"}</p>
- <button class="btn secondary" style="width:100%" onclick="${data.shopCreated?"shopLogin()":"shopRegister()"}">${data.shopCreated?"เข้าสู่ระบบร้าน":"สมัครบัญชีร้าน"}</button></div>
- <div class="note">เดโมนี้เก็บข้อมูลไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ยังไม่ใช่ระบบออนไลน์จริง และไม่ควรใช้เก็บรูปใบหน้าหรือข้อมูลส่วนบุคคลจริง</div>
- </div></div>`
+const products = [
+
+  {
+    id:1,
+    name:"ข้าวไก่ทอด",
+    price:50,
+    category:"อาหาร",
+    image:"https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&w=800&q=80",
+    description:"ไก่ทอดกรอบพร้อมข้าว",
+    open:true
+  },
+
+  {
+    id:2,
+    name:"แซนด์วิช",
+    price:35,
+    category:"อาหาร",
+    image:"https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=800&q=80",
+    description:"แซนด์วิชไส้แน่น",
+    open:true
+  },
+
+  {
+    id:3,
+    name:"น้ำแดง",
+    price:20,
+    category:"เครื่องดื่ม",
+    image:"https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&fit=crop&w=800&q=80",
+    description:"เครื่องดื่มเย็น ๆ",
+    open:false
+  },
+
+  {
+    id:4,
+    name:"โยเกิร์ตสตรอว์เบอร์รี",
+    price:45,
+    category:"ของหวาน",
+    image:"https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80",
+    description:"โยเกิร์ตพร้อมสตรอว์เบอร์รี",
+    open:true
+  }
+
+];
+
+
+let cart = [];
+
+let currentCategory = "ทั้งหมด";
+
+
+/* =========================
+   RENDER CATEGORY
+========================= */
+
+function renderCategories(){
+
+  const box =
+    document.getElementById("categories");
+
+  const cats = [
+    "ทั้งหมด",
+    ...new Set(
+      products.map(p => p.category)
+    )
+  ];
+
+  box.innerHTML = cats.map(cat => `
+
+    <button
+      class="category ${cat === currentCategory ? "active" : ""}"
+      onclick="selectCategory('${cat}')">
+
+      ${cat}
+
+    </button>
+
+  `).join("");
+
 }
 
-function shopRegister(){
- if(data.shopCreated)return alert("มีบัญชีร้านอยู่แล้ว")
- const name=prompt("ตั้งชื่อบัญชีร้าน","เจ้าของร้าน"); if(!name)return;
- data.shopCreated=true;data.shop.owner=name;save();role="shop";page="dashboard";render()
-}
-function shopLogin(){role="shop";page="dashboard";render()}
-function customerRegister(){
- const nickname=prompt("ชื่อเล่นของลูกค้า"); if(!nickname)return;
- const contact=prompt("อีเมลหรือเบอร์สำหรับบัญชี (ใช้เป็นตัวระบุบัญชี ไม่แสดงสาธารณะ)"); if(!contact)return;
- let c=data.customers.find(x=>x.contact.toLowerCase()===contact.toLowerCase());
- if(c){currentCustomer=c;role="customer";page="home";render();return}
- const dob=prompt("วันเกิดรูปแบบ YYYY-MM-DD (เช่น 2010-08-20)"); if(!dob)return;
- if(!/^\d{4}-\d{2}-\d{2}$/.test(dob))return alert("รูปแบบวันเกิดไม่ถูกต้อง");
- const ok=confirm("ยืนยันว่าคุณอ่านและยอมรับการเก็บข้อมูลบัญชีและรูปยืนยันตัวตนตามวัตถุประสงค์ของร้านแล้วหรือไม่?");
- if(!ok)return;
- const photo=prompt("เดโม: ใส่ชื่อไฟล์/คำอธิบายรูปยืนยันตัวตน (ระบบจริงควรใช้การอัปโหลดไฟล์อย่างปลอดภัย)");
- c={id:uid("c"),nickname,contact,dob,photo,createdAt:Date.now()};
- data.customers.push(c);save();currentCustomer=c;role="customer";page="home";render()
-}
-function logout(){role=null;currentCustomer=null;cart=[];render()}
 
-function app(){
- const isShop=role==="shop";
- return `<div class="app">
- <header class="top"><div class="topin"><div><div class="brand">${esc(data.shop.name)}</div><div class="sub">${isShop?"โหมดเจ้าของร้าน":"โหมดลูกค้า"}</div></div>
- <div class="row">${isShop?`<button class="iconbtn" onclick="editBanner()">🖼️</button>`:`<button class="iconbtn" onclick="page='cart';render()">🛒 <b>${cart.reduce((a,b)=>a+b.qty,0)||""}</b></button>`}
- <button class="iconbtn" onclick="profile()">👤</button></div></div></header>
- <main>${isShop?shopPage():customerPage()}</main>
- ${nav()}${modal()}
- </div>`
-}
-function nav(){
- if(role==="shop")return `<nav class="bottom">
- ${n("dashboard","🏠","ภาพรวม")}${n("orders","📋","ออเดอร์")}${n("products","🛍️","สินค้า")}${n("reviews","⭐","รีวิว")}${n("stats","📊","สถิติ")}</nav>`;
- return `<nav class="bottom">${n("home","🏠","หน้าร้าน")}${n("cart","🛒","ตะกร้า")}${n("orders","📋","ออเดอร์")}${n("reviews","⭐","รีวิว")}</nav>`
-}
-function n(p,icon,t){return `<button class="nav ${page===p?"active":""}" onclick="page='${p}';render()">${icon}<br>${t}</button>`}
+/* =========================
+   RENDER PRODUCTS
+========================= */
 
-function customerPage(){
- if(page==="home")return store();
- if(page==="cart")return cartPage();
- if(page==="orders")return customerOrders();
- if(page==="reviews")return reviewsPage();
- return store()
-}
-function store(){
- const cat=window.cat||"ทั้งหมด";
- const products=data.products.filter(p=>p.on&&(cat==="ทั้งหมด"||p.category===cat));
- return `${data.banner.on?`<section class="hero"><img src="${esc(data.banner.img)}"><div class="copy"><h1>${esc(data.banner.title)}</h1><p>${esc(data.banner.text)}</p></div></section>`:""}
- <div class="section row between"><h2>เลือกเมนู</h2><span class="muted">${products.length} รายการ</span></div>
- <div class="chips">${data.categories.map(c=>`<button class="chip ${cat===c?"active":""}" onclick="window.cat='${esc(c)}';render()">${esc(c)}</button>`).join("")}</div>
- <div class="grid">${products.map(productCard).join("")||`<div class="empty" style="grid-column:1/-1">ยังไม่มีสินค้าในหมวดนี้</div>`}</div>`
-}
-function productCard(p){
- const avg=data.reviews.filter(r=>r.productId===p.id).reduce((a,r)=>a+r.rating,0);
- const rs=data.reviews.filter(r=>r.productId===p.id); const rating=rs.length?(avg/rs.length).toFixed(1):"ใหม่";
- return `<article class="card product" onclick="productDetail('${p.id}')"><img src="${esc(p.img)}" onerror="this.style.display='none'"><div class="productbody"><h3>${esc(p.name)}</h3><div class="price">${money(p.price)}</div><div class="rating">⭐ ${rating}</div><button class="add" onclick="event.stopPropagation();addCart('${p.id}')">เพิ่มลงตะกร้า</button></div></article>`
-}
-function productDetail(id){
- const p=productById(id); if(!p)return;
- openModal(`<button class="close" onclick="closeModal()">×</button><img src="${esc(p.img)}" style="width:100%;max-height:360px;object-fit:cover;border-radius:18px"><h2>${esc(p.name)}</h2><div class="price">${money(p.price)}</div><p class="muted">${esc(p.desc)}</p><hr><h3>รีวิว</h3>${reviewsFor(p.id)}<button class="btn" style="width:100%;margin-top:12px" onclick="addCart('${p.id}');closeModal()">เพิ่มลงตะกร้า</button>`)
-}
-function reviewsFor(pid){const rs=data.reviews.filter(r=>r.productId===pid);return rs.length?rs.slice().reverse().map(reviewHtml).join(""):`<p class="muted">ยังไม่มีรีวิว</p>`}
-function reviewHtml(r){return `<div class="review"><b>${esc(r.nickname)}</b><div class="stars">${"⭐".repeat(r.rating)}</div><div>${esc(r.text)}</div><small class="muted">${new Date(r.createdAt).toLocaleDateString("th-TH")}</small>${r.reply?`<div class="note" style="margin-top:8px"><b>ร้านตอบ:</b> ${esc(r.reply)}</div>`:""}</div>`}
+function renderProducts(){
 
-function addCart(id){const p=productById(id);if(!p?.on)return;const x=cart.find(i=>i.id===id);if(x)x.qty++;else cart.push({id,qty:1});render()}
-function changeQty(id,d){const x=cart.find(i=>i.id===id);if(!x)return;x.qty+=d;if(x.qty<=0)cart=cart.filter(i=>i.id!==id);render()}
-function cartTotal(){return cart.reduce((s,x)=>s+(productById(x.id)?.price||0)*x.qty,0)}
-function cartPage(){
- if(!cart.length)return `<div class="empty"><div style="font-size:48px">🛒</div><h2>ตะกร้ายังว่าง</h2><button class="btn" onclick="page='home';render()">กลับไปเลือกสินค้า</button></div>`;
- return `<div class="section row between"><h2>ตะกร้าของฉัน</h2><button class="btn secondary" onclick="cart=[];render()">ล้าง</button></div>
- ${cart.map(x=>{const p=productById(x.id);return `<div class="panel"><div class="row between"><div><b>${esc(p.name)}</b><div class="muted">${money(p.price)} / ชิ้น</div></div><div class="qty"><button onclick="changeQty('${p.id}',-1)">−</button><span>${x.qty}</span><button onclick="changeQty('${p.id}',1)">+</button></div></div><div style="text-align:right;margin-top:10px;font-weight:800">${money(p.price*x.qty)}</div></div>`}).join("")}
- <div class="panel"><div class="row between"><span>รวม</span><span class="total">${money(cartTotal())}</span></div><button class="btn" style="width:100%;margin-top:12px" onclick="checkout()">ไปชำระเงิน</button></div>`
+  const box =
+    document.getElementById("products");
+
+  let list = products;
+
+  if(currentCategory !== "ทั้งหมด"){
+
+    list =
+      products.filter(
+        p => p.category === currentCategory
+      );
+
+  }
+
+  box.innerHTML = list.map(p => `
+
+    <article class="product">
+
+      <img
+        class="product-image"
+        src="${p.image}"
+        alt="${p.name}">
+
+      <div class="product-info">
+
+        <div class="product-name">
+          ${p.name}
+        </div>
+
+        <div class="product-desc">
+          ${p.description}
+        </div>
+
+        <div class="product-bottom">
+
+          <div class="price">
+            ฿${p.price}
+          </div>
+
+          ${
+            p.open
+            ? `
+              <button
+                class="add-btn"
+                onclick="addToCart(${p.id})">
+                +
+              </button>
+            `
+            : `
+              <span
+                style="font-size:12px;color:var(--muted)">
+                ปิดขาย
+              </span>
+            `
+          }
+
+        </div>
+
+      </div>
+
+      ${
+        !p.open
+        ? `
+          <div class="closed">
+            ปิดขาย
+          </div>
+        `
+        : ""
+      }
+
+    </article>
+
+  `).join("");
+
 }
-function checkout(){
- if(!currentCustomer)return alert("กรุณาเข้าสู่ระบบลูกค้าก่อน");
- const total=cartTotal(), min=Math.ceil(total*.5);
- openModal(`<button class="close" onclick="closeModal()">×</button><h2>ยืนยันคำสั่งซื้อ</h2><div class="panel">${cart.map(x=>{const p=productById(x.id);return `<div class="row between"><span>${esc(p.name)} × ${x.qty}</span><b>${money(p.price*x.qty)}</b></div>`}).join("")}<hr><div class="row between"><b>รวม</b><b class="total">${money(total)}</b></div></div>
- <div class="field"><label>วิธีชำระเงิน</label><select id="pay" onchange="togglePay()"><option value="transfer">โอนเงิน</option><option value="cash">เงินสด</option></select></div>
- <div id="transferBox"><div class="note">ยอดโอนขั้นต่ำ 50% = ${money(min)} — ระบบเดโมนี้ไม่ได้ตรวจสลิปอัตโนมัติ</div><div class="field"><label>จำนวนเงินที่โอน</label><input id="paid" type="number" min="${min}" placeholder="${min}"></div><div class="field"><label>สลิป</label><input id="slip" type="file" accept="image/*"></div></div>
- <div id="cashBox" class="hidden"><div class="field"><label>จะมารับภายในกี่นาที</label><input id="pickup" type="number" min="1" placeholder="30"></div></div>
- <button class="btn" style="width:100%" onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>`)
+
+
+/* =========================
+   CATEGORY
+========================= */
+
+function selectCategory(category){
+
+  currentCategory = category;
+
+  renderCategories();
+  renderProducts();
+
 }
-function togglePay(){const cash=document.getElementById("pay").value==="cash";document.getElementById("transferBox").classList.toggle("hidden",cash);document.getElementById("cashBox").classList.toggle("hidden",!cash)}
+
+
+/* =========================
+   CART
+========================= */
+
+function addToCart(id){
+
+  const product =
+    products.find(p => p.id === id);
+
+  if(!product || !product.open) return;
+
+  const existing =
+    cart.find(item => item.id === id);
+
+  if(existing){
+
+    existing.quantity++;
+
+  }else{
+
+    cart.push({
+      ...product,
+      quantity:1
+    });
+
+  }
+
+  updateCart();
+
+}
+
+
+function updateCart(){
+
+  const bar =
+    document.getElementById("cartBar");
+
+  const count =
+    cart.reduce(
+      (sum,item) =>
+      sum + item.quantity,
+      0
+    );
+
+  document.getElementById("cartCount")
+    .textContent =
+    `${count} รายการ`;
+
+  if(count > 0){
+
+    bar.classList.remove("hidden");
+
+  }else{
+
+    bar.classList.add("hidden");
+
+  }
+
+}
+
+
+/* =========================
+   CHECKOUT
+========================= */
+
+function openCheckout(){
+
+  if(cart.length === 0) return;
+
+  const box =
+    document.getElementById("checkoutItems");
+
+  box.innerHTML =
+    cart.map(item => `
+
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          margin-bottom:10px;
+        ">
+
+        <span>
+          ${item.name}
+          × ${item.quantity}
+        </span>
+
+        <b>
+          ฿${item.price * item.quantity}
+        </b>
+
+      </div>
+
+    `).join("");
+
+
+  const total =
+    cart.reduce(
+      (sum,item) =>
+      sum + item.price * item.quantity,
+      0
+    );
+
+  document.getElementById("checkoutTotal")
+    .textContent =
+    `฿${total}`;
+
+  document
+    .getElementById("checkoutModal")
+    .classList.add("show");
+
+}
+
+
+document
+  .getElementById("paymentMethod")
+  .addEventListener("change", function(){
+
+    document
+      .getElementById("transferBox")
+      .classList.toggle(
+        "hidden",
+        this.value !== "transfer"
+      );
+
+    document
+      .getElementById("cashBox")
+      .classList.toggle(
+        "hidden",
+        this.value !== "cash"
+      );
+
+  });
+
+
+/* =========================
+   ORDER
+========================= */
+
 function submitOrder(){
- const total=cartTotal(), pay=document.getElementById("pay").value;
- let paid=0,pickup=null,slip="";
- if(pay==="transfer"){paid=Number(document.getElementById("paid").value||0);if(paid<Math.ceil(total*.5))return alert("ยอดโอนต้องไม่น้อยกว่า 50% ของยอดสั่งซื้อ");if(!document.getElementById("slip").files.length)return alert("กรุณาแนบสลิป")}
- else{pickup=Number(document.getElementById("pickup").value||0);if(pickup<1)return alert("กรุณาระบุเวลารับสินค้า")}
- const items=cart.map(x=>({id:x.id,qty:x.qty,price:productById(x.id).price,name:productById(x.id).name}));
- const o={id:uid("A"),customerId:currentCustomer.id,customerName:currentCustomer.nickname,items,total,payment:pay,paid,pickup,slip:"แนบแล้ว",status:"รอ",date:today(),createdAt:Date.now()};
- data.orders.push(o);save();cart=[];closeModal();page="orders";render()
+
+  const method =
+    document.getElementById("paymentMethod")
+      .value;
+
+  if(!method){
+
+    alert("กรุณาเลือกวิธีชำระเงิน");
+
+    return;
+
+  }
+
+
+  if(method === "transfer"){
+
+    const slip =
+      document.getElementById("slip").files[0];
+
+    if(!slip){
+
+      alert("กรุณาแนบสลิป");
+
+      return;
+
+    }
+
+  }
+
+
+  if(method === "cash"){
+
+    const minutes =
+      document.getElementById("pickupMinutes")
+        .value;
+
+    if(!minutes){
+
+      alert("กรุณาระบุเวลาที่จะมารับ");
+
+      return;
+
+    }
+
+  }
+
+
+  const order = {
+
+    id:
+      "ORD-" +
+      Date.now(),
+
+    items:[...cart],
+
+    payment:method,
+
+    status:"กำลังรอร้านรับออเดอร์",
+
+    createdAt:
+      new Date().toISOString()
+
+  };
+
+
+  const orders =
+    JSON.parse(
+      localStorage.getItem("orders")
+      || "[]"
+    );
+
+  orders.push(order);
+
+  localStorage.setItem(
+    "orders",
+    JSON.stringify(orders)
+  );
+
+
+  cart = [];
+
+  updateCart();
+
+  closeModal("checkoutModal");
+
+  alert(
+    "ส่งออเดอร์ให้ร้านแล้ว ❤️"
+  );
+
 }
 
-function customerOrders(){
- const os=data.orders.filter(o=>o.customerId===currentCustomer?.id).slice().reverse();
- return `<div class="section"><h2>ออเดอร์ของฉัน</h2></div>${os.length?os.map(orderCardCustomer).join(""):`<div class="empty">ยังไม่มีออเดอร์</div>`}`
-}
-function statusClass(s){return s==="รอ"?"s-wait":s==="กำลังเตรียม"?"s-making":s==="ทำเสร็จแล้ว"?"s-done":s==="ปฏิเสธรับ"?"s-rejected":"s-picked"}
-function orderItems(o){return `<ul class="orderitems">${o.items.map(i=>`<li>${esc(i.name)} × ${i.qty} — ${money(i.price*i.qty)}</li>`).join("")}</ul>`}
-function orderCardCustomer(o){return `<div class="panel"><div class="row between"><b>#${esc(o.id)}</b><span class="status ${statusClass(o.status)}">${esc(o.status)}</span></div>${orderItems(o)}<div class="row between"><span class="muted">${o.payment==="transfer"?"โอนเงิน":"เงินสด"}${o.pickup?` · รับภายใน ${o.pickup} นาที`:""}</span><b>${money(o.total)}</b></div></div>`}
 
-function shopPage(){
- if(page==="dashboard")return shopDashboard();
- if(page==="orders")return shopOrders();
- if(page==="products")return shopProducts();
- if(page==="reviews")return shopReviews();
- if(page==="stats")return statsPage();
- if(page==="customers")return customersPage();
- return shopDashboard()
-}
-function shopDashboard(){
- const os=data.orders.filter(o=>o.date===today()), pending=os.filter(o=>["รอ","กำลังเตรียม"].includes(o.status)).length;
- return `<div class="section row between"><div><h2>ภาพรวมร้าน</h2><div class="muted">${new Date().toLocaleDateString("th-TH",{dateStyle:"long"})}</div></div><button class="btn secondary" onclick="page='customers';render()">👥 ลูกค้า</button></div>
- <div class="statgrid"><div class="stat"><span class="muted">ออเดอร์วันนี้</span><b>${os.length}</b></div><div class="stat"><span class="muted">กำลังดำเนินการ</span><b>${pending}</b></div><div class="stat"><span class="muted">ยอดวันนี้</span><b>${money(os.reduce((a,o)=>a+o.total,0))}</b></div><div class="stat"><span class="muted">ลูกค้า</span><b>${data.customers.length}</b></div></div>
- <div class="section row between"><h2>ออเดอร์ล่าสุด</h2><button class="btn secondary" onclick="page='orders';render()">ดูทั้งหมด</button></div>
- ${os.slice().reverse().slice(0,5).map(orderCardShop).join("")||`<div class="empty">วันนี้ยังไม่มีออเดอร์</div>`}`
-}
-function shopOrders(){
- const date=window.orderDate||today(),os=data.orders.filter(o=>o.date===date).slice().reverse();
- return `<div class="section row between"><h2>ออเดอร์</h2><input style="width:150px;padding:10px;border:1px solid var(--line);border-radius:12px" type="date" value="${date}" onchange="window.orderDate=this.value;render()"></div>
- ${os.length?os.map(orderCardShop).join(""):`<div class="empty">ไม่มีออเดอร์ในวันนี้</div>`}`
-}
-function orderCardShop(o){
- return `<div class="panel"><div class="row between"><div><b>#${esc(o.id)}</b><div class="muted">${esc(o.customerName)} · ${new Date(o.createdAt).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"})}</div></div><span class="status ${statusClass(o.status)}">${esc(o.status)}</span></div>
- ${orderItems(o)}<div class="row between"><div class="muted">${o.payment==="transfer"?`โอน · ชำระ ${money(o.paid)} · สลิปแนบ`:`เงินสด · รับภายใน ${o.pickup} นาที`}</div><b>${money(o.total)}</b></div>
- ${o.payment==="transfer"&&o.status==="รอ"?`<div class="row" style="margin-top:10px"><button class="btn good" onclick="approvePayment('${o.id}')">ยืนยันชำระเงิน</button><button class="btn bad" onclick="setStatus('${o.id}','ปฏิเสธรับ')">ปฏิเสธ</button></div>`:
- `<div class="row" style="margin-top:10px;flex-wrap:wrap">${o.status==="รอ"?`<button class="btn" onclick="setStatus('${o.id}','กำลังเตรียม')">กำลังเตรียม</button>`:""}${o.status==="กำลังเตรียม"?`<button class="btn good" onclick="setStatus('${o.id}','ทำเสร็จแล้ว')">ทำเสร็จแล้ว</button>`:""}${o.status==="ทำเสร็จแล้ว"?`<button class="btn secondary" onclick="setStatus('${o.id}','ลูกค้ามารับแล้ว')">ลูกค้ามารับแล้ว</button>`:""}${["รอ","กำลังเตรียม"].includes(o.status)?`<button class="btn bad" onclick="setStatus('${o.id}','ปฏิเสธรับ')">ปฏิเสธรับ</button>`:""}</div>`}
- </div>`
-}
-function approvePayment(id){const o=data.orders.find(x=>x.id===id);if(!o)return;o.status="กำลังเตรียม";save();render()}
-function setStatus(id,s){const o=data.orders.find(x=>x.id===id);if(!o)return;o.status=s;save();render()}
+/* =========================
+   CUSTOMER
+========================= */
 
-function shopProducts(){
- return `<div class="section row between"><h2>จัดการสินค้า</h2><button class="btn" onclick="productForm()">+ เพิ่มสินค้า</button></div>
- ${data.products.map(p=>`<div class="panel"><div class="row" style="align-items:flex-start"><img src="${esc(p.img)}" style="width:72px;height:72px;object-fit:cover;border-radius:14px"><div style="flex:1"><b>${esc(p.name)}</b><div class="muted">${esc(p.category)} · ${money(p.price)}</div><span class="status ${p.on?"s-done":"s-picked"}">${p.on?"เปิดขาย":"ปิดขาย"}</span></div></div><div class="row" style="margin-top:10px"><button class="btn secondary" onclick="productForm('${p.id}')">แก้ไข</button><button class="btn ${p.on?"warn":"good"}" onclick="toggleProduct('${p.id}')">${p.on?"ปิดขาย":"เปิดขาย"}</button></div></div>`).join("")}`
-}
-function productForm(id){
- const p=id?productById(id):{name:"",price:"",category:"อาหาร",desc:"",img:"",on:true};
- openModal(`<button class="close" onclick="closeModal()">×</button><h2>${id?"แก้ไขสินค้า":"เพิ่มสินค้า"}</h2>
- <div class="field"><label>ชื่อสินค้า</label><input id="pn" value="${esc(p.name)}"></div>
- <div class="field"><label>ราคา</label><input id="pp" type="number" min="0" value="${p.price}"></div>
- <div class="field"><label>หมวดหมู่</label><select id="pc">${data.categories.filter(x=>x!=="ทั้งหมด").map(c=>`<option ${p.category===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
- <div class="field"><label>รายละเอียด</label><textarea id="pd">${esc(p.desc)}</textarea></div>
- <div class="field"><label>URL รูปสินค้า (เดโม)</label><input id="pi" value="${esc(p.img)}" placeholder="https://..."></div>
- <button class="btn" style="width:100%" onclick="saveProduct('${id||""}')">บันทึก</button>`)
-}
-function saveProduct(id){
- const obj={id:id||uid("p"),name:document.getElementById("pn").value.trim(),price:Number(document.getElementById("pp").value||0),category:document.getElementById("pc").value,desc:document.getElementById("pd").value.trim(),img:document.getElementById("pi").value.trim(),on:id?productById(id).on:true};
- if(!obj.name||obj.price<0)return alert("กรอกชื่อและราคาให้ครบ");
- if(id)Object.assign(productById(id),obj);else data.products.push(obj);save();closeModal();render()
-}
-function toggleProduct(id){const p=productById(id);p.on=!p.on;save();render()}
+function openAccount(){
 
-function shopReviews(){
- return `<div class="section row between"><h2>รีวิวลูกค้า</h2><span class="pill">${data.reviews.length} รีวิว</span></div>
- ${data.reviews.slice().reverse().map(r=>`${reviewHtml(r)}<button class="btn secondary" onclick="replyReview('${r.id}')">${r.reply?"แก้คำตอบ":"ตอบรีวิว"}</button>`).join("")||`<div class="empty">ยังไม่มีรีวิว</div>`}`
-}
-function replyReview(id){const r=data.reviews.find(x=>x.id===id);const t=prompt("ตอบรีวิว",r.reply||"");if(t===null)return;r.reply=t;save();render()}
+  document
+    .getElementById("accountModal")
+    .classList.add("show");
 
-function reviewsPage(){
- const mine=data.reviews.filter(r=>r.customerId===currentCustomer.id);
- const todayCount=mine.filter(r=>r.date===today()).length;
- return `<div class="section row between"><h2>รีวิว</h2><span class="pill">วันนี้ ${todayCount}/5</span></div>
- <div class="panel"><b>แชร์ประสบการณ์หลังซื้อสินค้า</b><p class="muted">รีวิวได้สูงสุด 5 ครั้งต่อวัน</p><button class="btn" onclick="writeReview()" ${todayCount>=5?"disabled":""}>เขียนรีวิว</button></div>
- ${data.reviews.slice().reverse().map(reviewHtml).join("")||`<div class="empty">ยังไม่มีรีวิว</div>`}`
-}
-function writeReview(){
- const count=data.reviews.filter(r=>r.customerId===currentCustomer.id&&r.date===today()).length;if(count>=5)return alert("วันนี้รีวิวครบ 5 ครั้งแล้ว");
- const eligible=data.orders.filter(o=>o.customerId===currentCustomer.id&&o.status==="ลูกค้ามารับแล้ว");
- if(!eligible.length)return alert("รีวิวได้หลังจากมีออเดอร์ที่รับสินค้าแล้ว");
- const opts=eligible.flatMap(o=>o.items.map(i=>({id:i.id,name:i.name}))).filter((v,i,a)=>a.findIndex(x=>x.id===v.id)===i);
- const name=prompt("เลือกสินค้าโดยพิมพ์ชื่อสินค้า:\\n"+opts.map(x=>x.name).join("\\n"));if(!name)return;
- const p=opts.find(x=>x.name===name);if(!p)return alert("ไม่พบสินค้านี้");
- const rating=Number(prompt("ให้กี่ดาว 1-5","5"));if(rating<1||rating>5)return alert("คะแนนต้อง 1-5");
- const text=prompt("เขียนรีวิว");if(!text)return;
- data.reviews.push({id:uid("r"),customerId:currentCustomer.id,nickname:currentCustomer.nickname,productId:p.id,rating,text,date:today(),createdAt:Date.now(),reply:""});save();render()
 }
 
-function statsPage(){
- const total=data.orders.reduce((a,o)=>a+o.total,0), repeat=data.customers.filter(c=>data.orders.filter(o=>o.customerId===c.id).length>=2).length;
- const sold={};data.orders.forEach(o=>o.items.forEach(i=>sold[i.id]=(sold[i.id]||0)+i.qty));
- const top=Object.entries(sold).sort((a,b)=>b[1]-a[1]).slice(0,5);
- return `<div class="section"><h2>สถิติร้าน</h2><div class="muted">ข้อมูลจากออเดอร์และรีวิวในเครื่องนี้</div></div>
- <div class="statgrid"><div class="stat"><span class="muted">ยอดขายรวม</span><b>${money(total)}</b></div><div class="stat"><span class="muted">ออเดอร์</span><b>${data.orders.length}</b></div><div class="stat"><span class="muted">ลูกค้า</span><b>${data.customers.length}</b></div><div class="stat"><span class="muted">ซื้อซ้ำ</span><b>${repeat}</b></div></div>
- <div class="section"><h2>🏆 สินค้าขายดี</h2></div><div class="panel">${top.map(([id,n],i)=>`<div class="row between" style="padding:9px 0;border-bottom:1px solid var(--line)"><span>${i+1}. ${esc(productById(id)?.name||"สินค้า")}</span><b>${n} ชิ้น</b></div>`).join("")||"ยังไม่มีข้อมูล"}</div>
- <div class="section"><h2>⭐ คะแนนสินค้า</h2></div><div class="panel">${data.products.map(p=>{const rs=data.reviews.filter(r=>r.productId===p.id);const avg=rs.length?(rs.reduce((a,r)=>a+r.rating,0)/rs.length).toFixed(1):"-";return `<div class="row between" style="padding:9px 0"><span>${esc(p.name)}</span><b>⭐ ${avg}</b></div>`}).join("")}</div>`
-}
-function customersPage(){
- return `<div class="section row between"><h2>ข้อมูลลูกค้า</h2><span class="pill">${data.customers.length} คน</span></div>
- <div class="statgrid"><div class="stat"><span class="muted">ลูกค้าทั้งหมด</span><b>${data.customers.length}</b></div><div class="stat"><span class="muted">ซื้อซ้ำ</span><b>${data.customers.filter(c=>data.orders.filter(o=>o.customerId===c.id).length>=2).length}</b></div></div>
- ${data.customers.map(c=>{const os=data.orders.filter(o=>o.customerId===c.id);return `<div class="panel"><div class="row between"><b>${esc(c.nickname)}</b><span>${ageFrom(c.dob)} ปี</span></div><div class="muted">วันเกิด ${esc(c.dob)} · ออเดอร์ ${os.length} ครั้ง</div><div class="muted">ยอดซื้อรวม ${money(os.reduce((a,o)=>a+o.total,0))}</div></div>`}).join("")||`<div class="empty">ยังไม่มีลูกค้า</div>`}`
+
+function saveCustomer(){
+
+  const name =
+    document.getElementById("customerName")
+      .value.trim();
+
+  const age =
+    document.getElementById("customerAge")
+      .value;
+
+  const birth =
+    document.getElementById("customerBirth")
+      .value;
+
+  const photo =
+    document.getElementById("identityPhoto")
+      .files[0];
+
+
+  if(!name || !age || !birth){
+
+    alert(
+      "กรุณากรอกข้อมูลให้ครบ"
+    );
+
+    return;
+
+  }
+
+
+  if(!photo){
+
+    alert(
+      "กรุณาแนบรูปสำหรับยืนยันตัวตน"
+    );
+
+    return;
+
+  }
+
+
+  const customer = {
+
+    name,
+    age,
+    birth,
+
+    /*
+      รูปจะไม่ถูกเก็บลง localStorage
+      ในระบบจริงจะส่งเข้า storage
+      ของ Backend ที่ปลอดภัย
+    */
+
+    verified:false
+
+  };
+
+
+  localStorage.setItem(
+    "customer",
+    JSON.stringify(customer)
+  );
+
+
+  alert(
+    "บันทึกข้อมูลแล้ว รอร้านตรวจสอบ"
+  );
+
 }
 
-function profile(){
- if(role==="shop")return openModal(`<button class="close" onclick="closeModal()">×</button><h2>บัญชีร้าน</h2><p class="muted">บัญชีเจ้าของร้าน 1 บัญชี</p><button class="btn secondary" onclick="logout()">ออกจากระบบ</button>`);
- const c=currentCustomer;openModal(`<button class="close" onclick="closeModal()">×</button><h2>โปรไฟล์ลูกค้า</h2><div class="field"><label>ชื่อเล่น</label><input id="edn" value="${esc(c.nickname)}"></div><div class="field"><label>วันเกิด</label><input id="edd" type="date" value="${esc(c.dob)}"></div><p class="muted">อายุปัจจุบัน: ${ageFrom(c.dob)} ปี</p><div class="note">รูปยืนยันตัวตนในเดโมนี้ไม่ได้อัปโหลดไปเซิร์ฟเวอร์</div><button class="btn" onclick="saveProfile()">บันทึก</button> <button class="btn secondary" onclick="logout()">ออกจากระบบ</button>`)
-}
-function saveProfile(){currentCustomer.nickname=document.getElementById("edn").value.trim()||currentCustomer.nickname;currentCustomer.dob=document.getElementById("edd").value;const c=data.customers.find(x=>x.id===currentCustomer.id);Object.assign(c,currentCustomer);save();closeModal();render()}
-function editBanner(){
- openModal(`<button class="close" onclick="closeModal()">×</button><h2>จัดการโปรโมชัน</h2><div class="field"><label>แสดง Banner</label><select id="bo"><option value="1" ${data.banner.on?"selected":""}>แสดง</option><option value="0" ${!data.banner.on?"selected":""}>ซ่อน</option></select></div><div class="field"><label>หัวข้อ</label><input id="bt" value="${esc(data.banner.title)}"></div><div class="field"><label>ข้อความ</label><input id="bx" value="${esc(data.banner.text)}"></div><div class="field"><label>URL รูป (เดโม)</label><input id="bi" value="${esc(data.banner.img)}"></div><button class="btn" onclick="saveBanner()">บันทึก</button>`)
-}
-function saveBanner(){data.banner.on=document.getElementById("bo").value==="1";data.banner.title=document.getElementById("bt").value;data.banner.text=document.getElementById("bx").value;data.banner.img=document.getElementById("bi").value;save();closeModal();render()}
 
-function modal(){return `<div id="modal" class="modal" onclick="if(event.target.id==='modal')closeModal()"><div class="sheet" id="sheet"></div></div>`}
-function openModal(html){setTimeout(()=>{document.getElementById("sheet").innerHTML=html;document.getElementById("modal").classList.add("show")})}
-function closeModal(){const m=document.getElementById("modal");if(m)m.classList.remove("show")}
+/* =========================
+   ORDERS
+========================= */
 
-render();
+function openOrders(){
+
+  const orders =
+    JSON.parse(
+      localStorage.getItem("orders")
+      || "[]"
+    );
+
+  let text =
+    "ออเดอร์ของคุณ\n\n";
+
+  if(!orders.length){
+
+    text +=
+      "ยังไม่มีออเดอร์";
+
+  }else{
+
+    orders.forEach(order => {
+
+      text +=
+        `${order.id}\n`;
+
+      text +=
+        `สถานะ: ${order.status}\n\n`;
+
+    });
+
+  }
+
+  alert(text);
+
+}
+
+
+/* =========================
+   REVIEWS
+========================= */
+
+function openReviews(){
+
+  alert(
+    "หน้าระบบรีวิวจะเชื่อมกับฐานข้อมูลในขั้นต่อไป"
+  );
+
+}
+
+
+/* =========================
+   SHOP
+========================= */
+
+function showShop(){
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+function closeModal(id){
+
+  document
+    .getElementById(id)
+    .classList.remove("show");
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+renderCategories();
+renderProducts();
+updateCart();
+
 </script>
-</body>
-</html>'''
 
-path=Path("/mnt/data/shop_system_demo.html")
-path.write_text(html, encoding="utf-8")
-print(f"สร้างไฟล์แล้ว: {path}")
+</body>
+</html>
